@@ -167,13 +167,37 @@ function sumActive(obj) {
 }
 
 function getMonthlyNet(month) {
-  const income = sumActive(fixed.Income);
-  const fixedCosts = sumActive(fixed.Costs);
-  const variable = expenses[YEAR][month]
-    .reduce((s, e) => s + e.amount, 0);
+  let income = 0;
+  let fixedCosts = 0;
+  let savings = 0;
 
-  return income - fixedCosts - variable;
+  // Income
+  for (const name in fixed.Income) {
+    if (fixed.Income[name].active) {
+      income += fixed.Income[name].amount;
+    }
+  }
+
+  // Fixed costs vs savings
+  for (const name in fixed.Costs) {
+    if (!fixed.Costs[name].active) continue;
+
+    if (name.toLowerCase().includes("saving")) {
+      savings += fixed.Costs[name].amount;
+    } else {
+      fixedCosts += fixed.Costs[name].amount;
+    }
+  }
+
+  const variable =
+    expenses[YEAR][month].reduce((s, e) => s + e.amount, 0);
+
+  return {
+    bankNet: income - fixedCosts - variable,
+    savings
+  };
 }
+
 
 /************************************************************
  * OVERVIEW — ROLLING BALANCE
@@ -195,8 +219,9 @@ function renderOverview() {
 
   MONTHS.forEach(month => {
     const start = runningBalance;
-    const net = getMonthlyNet(month);
-    const end = start + net;
+    const result = getMonthlyNet(month);
+    const end = start + result.bankNet + result.savings;
+    runningBalance = end;
 
     const row = document.createElement("div");
     row.className = "forecast-row";
