@@ -237,10 +237,10 @@ function getMonthlyNet(month) {
 
   const rawNet = income - fixedCosts - variable;
 
-return {
-  bankNet: rawNet - savings, // ⛔ force-remove savings
-  savings
-};
+  return {
+    bankNet: rawNet - savings, // ⛔ force-remove savings
+    savings
+  };
 }
 
 /************************************************************
@@ -308,6 +308,7 @@ function renderSummary() {
     data: {
       labels: ["Income", "Fixed Costs", "Variable"],
       datasets: [{
+        label: "Monthly amounts (€)", // ✅ ADD THIS LINE
         data: [income, fixedCosts, variable],
         backgroundColor: ["#16a34a", "#dc2626", "#f59e0b"]
       }]
@@ -389,6 +390,57 @@ function renderEnhancedSummary() {
     `Projected end-of-year balance: €${openingBalance + yearGrowth}`;
 }
 
+let monthlyChart; // keep reference so we can update
+
+function renderMonthlyChart() {
+  const ctx = document.getElementById("monthlyChart");
+  if (!ctx) return;
+
+  const r = getMonthlyNet(currentMonth);
+
+  const variable =
+    expenses[YEAR][currentMonth].reduce((s, e) => s + e.amount, 0);
+
+  const data = {
+    labels: ["Income", "Fixed Costs", "Variable", "Savings"],
+    datasets: [{
+      data: [
+        r.bankNet + variable + getSavings(currentMonth), // income proxy
+        r.bankNet < 0 ? 0 : (r.bankNet + variable),
+        variable,
+        r.savings
+      ],
+      backgroundColor: [
+        "#22c55e", // green
+        "#ef4444", // red
+        "#f59e0b", // orange
+        "#3b82f6"  // blue
+      ]
+    }]
+  };
+
+  if (monthlyChart) monthlyChart.destroy();
+
+  monthlyChart = new Chart(ctx, {
+    type: "bar",
+    data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+
+function getSavings(month) {
+  return getMonthlyNet(month).savings;
+}
+
+
+
+
 
 /************************************************************
  * SAVE & RENDER
@@ -405,6 +457,7 @@ function render() {
   renderOverview();
   renderSummary();
   renderEnhancedSummary();
+  renderMonthlyChart();
 }
 
 render();
