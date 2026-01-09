@@ -162,7 +162,7 @@ function renderExpenses() {
     const dateText = e.date
       ? new Date(e.date).toLocaleString()
       : "No date";
-      
+
     text.textContent = `${e.category}: €${e.amount} (${dateText})`;
 
     // ✏️ Edit button
@@ -290,6 +290,7 @@ function renderOverview() {
 let chart;
 
 function renderSummary() {
+  document.getElementById("summaryMonth").textContent = currentMonth;
   const income = sumActive(fixed.Income);
   const fixedCosts = sumActive(fixed.Costs);
   const variable = expenses[YEAR][currentMonth]
@@ -314,6 +315,81 @@ function renderSummary() {
   });
 }
 
+function renderEnhancedSummary() {
+  // ---------- MONTHLY ----------
+  const monthResult = getMonthlyNet(currentMonth);
+
+  const monthlyVariable =
+    expenses[YEAR][currentMonth].reduce((s, e) => s + e.amount, 0);
+
+  const monthlyFixed =
+    Object.values(fixed.Costs)
+      .filter(c => c.active && !c.name?.toLowerCase?.().includes("saving"))
+      .reduce((s, c) => s + c.amount, 0);
+
+  document.getElementById("monthIncome").textContent =
+    `Income: €${monthResult.bankNet + monthlyFixed + monthlyVariable}`;
+
+  document.getElementById("monthFixed").textContent =
+    `Fixed costs: €${monthlyFixed}`;
+
+  document.getElementById("monthVariable").textContent =
+    `Variable expenses: €${monthlyVariable}`;
+
+  document.getElementById("monthSavings").textContent =
+    `Savings: €${monthResult.savings}`;
+
+  document.getElementById("monthNet").textContent =
+    `Net cashflow: €${monthResult.bankNet}`;
+
+  document.getElementById("monthGrowth").textContent =
+    `Total monthly growth: €${monthResult.bankNet + monthResult.savings}`;
+
+  // ---------- YEARLY ----------
+  let yearIncome = 0;
+  let yearFixed = 0;
+  let yearVariable = 0;
+  let yearSavings = 0;
+
+  MONTHS.forEach(m => {
+    const r = getMonthlyNet(m);
+    yearSavings += r.savings;
+    yearVariable += expenses[YEAR][m].reduce((s, e) => s + e.amount, 0);
+  });
+
+  Object.values(fixed.Income).forEach(i => {
+    if (i.active) yearIncome += i.amount * 12;
+  });
+
+  Object.entries(fixed.Costs).forEach(([name, c]) => {
+    if (!c.active) return;
+    if (name.toLowerCase().includes("saving")) return;
+    yearFixed += c.amount * 12;
+  });
+
+  const yearGrowth =
+    (yearIncome - yearFixed - yearVariable) + yearSavings;
+
+  document.getElementById("yearIncome").textContent =
+    `Total income: €${yearIncome}`;
+
+  document.getElementById("yearFixed").textContent =
+    `Total fixed costs: €${yearFixed}`;
+
+  document.getElementById("yearVariable").textContent =
+    `Total variable expenses: €${yearVariable}`;
+
+  document.getElementById("yearSavings").textContent =
+    `Total savings: €${yearSavings}`;
+
+  document.getElementById("yearGrowth").textContent =
+    `Total yearly growth: €${yearGrowth}`;
+
+  document.getElementById("yearEndBalance").textContent =
+    `Projected end-of-year balance: €${openingBalance + yearGrowth}`;
+}
+
+
 /************************************************************
  * SAVE & RENDER
  ************************************************************/
@@ -328,6 +404,7 @@ function render() {
   renderExpenses();
   renderOverview();
   renderSummary();
+  renderEnhancedSummary();
 }
 
 render();

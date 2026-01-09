@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,94 +9,117 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <header>
-    <h1>Personal Finance</h1>
-    <p class="subtitle">Rolling cash-flow forecast (2026)</p>
-  </header>
+    <header>
+      <h1>Personal Finance</h1>
+      <p class="subtitle">Rolling cash-flow forecast (2026)</p>
+    </header>
 
-  <!-- TABS -->
-  <nav class="tabs">
-    <button class="active" onclick="showTab('overviewTab')">Overview</button>
-    <button onclick="showTab('fixedTab')">Fixed Items</button>
-    <button onclick="showTab('expensesTab')">Expenses</button>
-    <button onclick="showTab('summaryTab')">Summary</button>
-  </nav>
+    <!-- TABS -->
+    <nav class="tabs">
+      <button class="active" onclick="showTab('overviewTab')">Overview</button>
+      <button onclick="showTab('fixedTab')">Fixed Items</button>
+      <button onclick="showTab('expensesTab')">Expenses</button>
+      <button onclick="showTab('summaryTab')">Summary</button>
+    </nav>
 
-  <!-- OVERVIEW TAB -->
-  <section id="overviewTab" class="tab active">
-    <h2>2026 Bank Balance Forecast</h2>
+    <!-- OVERVIEW TAB -->
+    <section id="overviewTab" class="tab active">
+      <h2>2026 Bank Balance Forecast</h2>
 
-    <label>Opening Balance (Before January 2026)</label>
-    <input id="openingBalance" type="number" />
+      <label>Opening Balance (Before January 2026)</label>
+      <input id="openingBalance" type="number" />
 
-    <div class="forecast-table-header">
-      <span>Month</span>
-      <span>Start (€)</span>
-      <span>End (€)</span>
-    </div>
+      <div class="forecast-table-header">
+        <span>Month</span>
+        <span>Start (€)</span>
+        <span>End (€)</span>
+      </div>
 
-    <div id="forecastTable"></div>
-  </section>
+      <div id="forecastTable"></div>
+    </section>
 
-  <!-- FIXED ITEMS TAB -->
-  <section id="fixedTab" class="tab">
-    <h2>Monthly Fixed Items</h2>
+    <!-- FIXED ITEMS TAB -->
+    <section id="fixedTab" class="tab">
+      <h2>Monthly Fixed Items</h2>
 
-    <div class="table-header">
-      <span>Category</span>
-      <span>Amount (€)</span>
-      <span>Active</span>
-    </div>
+      <div class="table-header">
+        <span>Category</span>
+        <span>Amount (€)</span>
+        <span>Active</span>
+      </div>
 
-    <div id="fixedList"></div>
+      <div id="fixedList"></div>
 
-    <h3>Add new fixed item</h3>
-    <form id="fixedForm">
-      <input id="fixedName" placeholder="Category name" required />
-      <input id="fixedAmount" type="number" placeholder="Amount (€)" required />
-      <select id="fixedType">
-        <option value="Income">Income</option>
-        <option value="Costs">Cost</option>
-      </select>
-      <button type="submit">Add item</button>
-    </form>
-  </section>
+      <h3>Add new fixed item</h3>
+      <form id="fixedForm">
+        <input id="fixedName" placeholder="Category name" required />
+        <input id="fixedAmount" type="number" placeholder="Amount (€)" required />
+        <select id="fixedType">
+          <option value="Income">Income</option>
+          <option value="Costs">Cost</option>
+        </select>
+        <button type="submit">Add item</button>
+      </form>
+    </section>
 
-  <!-- EXPENSES TAB -->
-  <section id="expensesTab" class="tab">
-    <h2 id="expensesTitle">Expenses</h2>
+    <!-- EXPENSES TAB -->
+    <section id="expensesTab" class="tab">
+      <h2 id="expensesTitle">Expenses</h2>
 
-    <select id="monthSelect"></select>
+      <select id="monthSelect"></select>
 
-    <form id="expenseForm">
-      <input id="category" placeholder="Category" required />
-      <input id="amount" type="number" placeholder="Amount (€)" required />
-      <button type="submit">Add expense</button>
-    </form>
+      <form id="expenseForm">
+        <input id="category" placeholder="Category" required />
+        <input id="amount" type="number" placeholder="Amount (€)" required />
+        <button type="submit">Add expense</button>
+      </form>
 
-    <ul id="expenseList"></ul>
-  </section>
+      <ul id="expenseList"></ul>
+    </section>
 
-  <!-- SUMMARY TAB -->
-  <section id="summaryTab" class="tab">
-    <h2 id="summaryTitle">Summary</h2>
+    <!-- SUMMARY TAB -->
+    <section id="summaryTab" class="tab">
+      <h2 id="summaryTitle">Summary — <span id="summaryMonth"></span></h2>
 
-    <div class="summary-card">
-      <p id="sumIncome"></p>
-      <p id="sumFixed"></p>
-      <p id="sumVariable"></p>
-      <h3 id="sumNet"></h3>
-    </div>
+      <div class="summary-card">
+        <p id="sumIncome"></p>
+        <p id="sumFixed"></p>
+        <p id="sumVariable"></p>
+        <h3 id="sumNet"></h3>
+      </div>
 
-    <canvas id="financeChart"></canvas>
-  </section>
+      <div class="summary-card">
+        <h3>Monthly Overview</h3>
+        <p id="monthIncome"></p>
+        <p id="monthFixed"></p>
+        <p id="monthVariable"></p>
+        <p id="monthSavings"></p>
+        <p id="monthNet"></p>
+        <h4 id="monthGrowth"></h4>
+      </div>
 
-</div>
+      <div class="summary-card">
+        <h3>Yearly Overview (2026)</h3>
+        <p id="yearIncome"></p>
+        <p id="yearFixed"></p>
+        <p id="yearVariable"></p>
+        <p id="yearSavings"></p>
+        <h4 id="yearGrowth"></h4>
+        <p id="yearEndBalance"></p>
+      </div>
 
-<script src="app.js"></script>
+
+      <canvas id="financeChart"></canvas>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
 </body>
+
 </html>
