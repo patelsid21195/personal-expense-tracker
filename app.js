@@ -5,10 +5,12 @@
 const YEAR = "2026";
 
 const MONTHS = [
-  "January","February","March","April",
-  "May","June","July","August",
-  "September","October","November","December"
+  "January", "February", "March", "April",
+  "May", "June", "July", "August",
+  "September", "October", "November", "December"
 ];
+
+const expenseList = document.getElementById("expenseList");
 
 let currentMonth = MONTHS[0];
 
@@ -33,7 +35,7 @@ let fixed = JSON.parse(localStorage.getItem("fixed")) || {
 };
 
 let openingBalance =
-  Number(localStorage.getItem("openingBalance")) || 1000;
+  Number(localStorage.getItem("openingBalance")) || 0;
 
 if (!expenses[YEAR]) {
   expenses[YEAR] = Object.fromEntries(
@@ -53,7 +55,7 @@ function showTab(tabId) {
 
   document.getElementById(tabId).classList.add("active");
 
-  const order = ["overviewTab","fixedTab","expensesTab","summaryTab"];
+  const order = ["overviewTab", "fixedTab", "expensesTab", "summaryTab"];
   document.querySelectorAll(".tabs button")[order.indexOf(tabId)]
     .classList.add("active");
 }
@@ -148,13 +150,49 @@ expenseForm.onsubmit = e => {
 };
 
 function renderExpenses() {
+  // 🔹 Always clear list first (prevents duplicates)
   expenseList.innerHTML = "";
-  expenses[YEAR][currentMonth].forEach(e => {
+
+  expenses[YEAR][currentMonth].forEach((e, index) => {
     const li = document.createElement("li");
-    li.textContent = `${e.category}: €${e.amount}`;
+
+    // Text
+    const text = document.createElement("span");
+    text.textContent = `${e.category}: €${e.amount}`;
+
+    // ✏️ Edit button
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "✏️";
+    editBtn.style.marginLeft = "10px";
+
+    editBtn.onclick = () => {
+      const newCategory = prompt("Edit category:", e.category);
+      const newAmount = prompt("Edit amount (€):", e.amount);
+
+      if (newCategory !== null && newAmount !== null) {
+        e.category = newCategory;
+        e.amount = Number(newAmount);
+        render();
+      }
+    };
+
+    // ❌ Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "❌";
+    deleteBtn.style.marginLeft = "6px";
+
+    deleteBtn.onclick = () => {
+      expenses[YEAR][currentMonth].splice(index, 1);
+      render();
+    };
+
+    li.appendChild(text);
+    li.appendChild(editBtn);
+    li.appendChild(deleteBtn);
     expenseList.appendChild(li);
   });
 }
+
 
 /************************************************************
  * FINANCIAL CALCULATIONS
@@ -178,7 +216,7 @@ function getMonthlyNet(month) {
     }
   }
 
-  // Fixed costs vs savings
+  // Fixed costs vs savings (STRICT separation)
   for (const name in fixed.Costs) {
     if (!fixed.Costs[name].active) continue;
 
@@ -190,14 +228,15 @@ function getMonthlyNet(month) {
   }
 
   const variable =
-    expenses[YEAR][month].reduce((s, e) => s + e.amount, 0);
+    expenses[YEAR][month].reduce((sum, e) => sum + e.amount, 0);
 
-  return {
-    bankNet: income - fixedCosts - variable,
-    savings
-  };
+  const rawNet = income - fixedCosts - variable;
+
+return {
+  bankNet: rawNet - savings, // ⛔ force-remove savings
+  savings
+};
 }
-
 
 /************************************************************
  * OVERVIEW — ROLLING BALANCE
@@ -264,7 +303,7 @@ function renderSummary() {
       labels: ["Income", "Fixed Costs", "Variable"],
       datasets: [{
         data: [income, fixedCosts, variable],
-        backgroundColor: ["#16a34a","#dc2626","#f59e0b"]
+        backgroundColor: ["#16a34a", "#dc2626", "#f59e0b"]
       }]
     }
   });
