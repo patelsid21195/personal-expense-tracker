@@ -31,100 +31,144 @@ Works on Netlify, GitHub Pages, Vercel, or any static host.
 Always change ONE thing at a time.
 
 
-✅ PART 1 — v1.0 RELEASE SUMMARY (for README.md)
+🏷️ Version History
+✅ v1.0 — Stable Core Release
 
-You can copy-paste this section directly into your README.md.
+Status: Frozen
+Focus: Correct financial modeling & predictable behavior
 
-📌 Personal Finance Tracker — v1.0 (Stable)
-Overview
-
-Version v1.0 of the Personal Finance Tracker is a stable, fully functional browser-based budgeting and forecasting tool for personal use.
-It is designed to provide clear financial visibility without over-engineering or hidden logic.
-
-The app focuses on correct financial modeling, predictability, and long-term maintainability.
-
-Core Capabilities
-
-Rolling monthly bank balance forecast for the entire year (2026)
+v1.0 establishes a stable foundation with:
 
 Clear separation of:
 
 Income
 
-Fixed costs
+Fixed costs (excluding savings)
 
 Variable expenses
 
 Savings
 
-Month-by-month expense tracking with automatic date/time capture
+Rolling yearly balance forecast
 
 Monthly and yearly summaries
 
-Visual charts for quick financial insight
+Expense tracking with automatic date & time
+
+Visual charts for monthly insight
 
 Mobile-friendly UI
 
-No backend required (100% static)
+No persistence (refresh resets data)
 
-Financial Model (Guaranteed in v1.0)
-
-The application uses a transparent and realistic cash-flow model:
+Core financial model (locked in v1.0):
 
 bankNet = income − fixedCosts − variableExpenses
 endBalance = startBalance + bankNet + savings
 
 
-Important guarantees:
+v1.0 is intentionally minimal and predictable.
 
-Savings are not treated as expenses
+🚀 v1.1 — Export Features (Current)
 
-Savings increase net worth
+Status: Frozen
+Focus: Data portability & auditability
+Backward compatible with v1.0
 
-No double-counting of money
+Version v1.1 adds CSV export functionality without changing any core financial logic.
 
-All views (Overview, Summary, Charts) use the same source of truth
+New Features in v1.1
+📤 Yearly CSV Export
 
-What v1.0 Does NOT Do (By Design)
+Exports a full-year financial overview with one row per month.
 
-No persistent storage (refresh resets data)
+Columns:
 
-No multi-year tracking
+Month
 
-No alerts or warnings
+Income
 
-No authentication
+Fixed Costs (excluding savings)
 
-No cloud sync
+Variable Expenses
 
-These features are intentionally deferred to future versions.
+Savings
 
-Stability Promise
+Net Cashflow
 
-In v1.0:
+Total Growth (net + savings)
 
-Core calculations are stable and tested
+End Balance (rolling)
 
-UI features are layered on top of a fixed logic core
+✔ Uses the same source of truth as the UI
+✔ Matches Overview and Summary exactly
 
-Any future features can be added or removed without breaking existing behavior
+📤 Expense-Level CSV Export
 
-Intended Usage
+Exports all expenses across all months, one row per expense.
 
-Personal budgeting
+Columns:
 
-Financial planning
+Month
 
-Understanding monthly vs yearly cash-flow
+Category
 
-Learning financial modeling through code
+Amount
 
-Versioning Strategy
+Date
 
-v1.0 → Stable finance engine (this release)
+Time
 
-v1.1 → Export / persistence
+✔ Date and time are stored automatically at entry
+✔ Suitable for auditing or accounting
+✔ Excel / Google Sheets compatible
 
-v1.2 → Advanced charts
+📤 Month-Level CSV Export
 
-v2.0 → Multi-year support
+Exports a single selected month with:
+
+Monthly summary (income, costs, savings, net)
+
+Followed by all expenses for that month
+
+✔ Useful for monthly reviews
+✔ Shareable snapshot
+✔ Human-readable format
+
+Design Principles Followed in v1.1
+
+✅ No recalculation of financial values
+
+✅ All exports read from the same core logic (getMonthlyNet)
+
+✅ Read-only features (no mutation of state)
+
+✅ Easy to remove or extend
+
+✅ No impact on existing UI or calculations
+
+What v1.1 Does NOT Do (By Design)
+
+No PDF export
+
+No data import
+
+No persistence yet
+
+No charts in exported files
+
+These are intentionally deferred to future versions.
+
+🧭 Versioning Strategy Going Forward
+
+v1.2 → LocalStorage persistence
+
+v1.3+ → Advanced visuals, backups, imports
+
+Each version:
+
+adds features incrementally
+
+preserves backward compatibility
+
+freezes a stable baseline via Git tags

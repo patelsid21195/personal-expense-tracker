@@ -438,7 +438,185 @@ function getSavings(month) {
   return getMonthlyNet(month).savings;
 }
 
+/**
+ * Export full year data as CSV.
+ * Safe: read-only, does not mutate state.
+ * Version: v1.1
+ */
+function exportCSV() {
+  const rows = [];
 
+  rows.push([
+    "Month",
+    "Income",
+    "Fixed Costs",
+    "Variable Expenses",
+    "Savings",
+    "Net Cashflow",
+    "Total Growth",
+    "End Balance"
+  ]);
+
+  let runningBalance = openingBalance;
+
+  // Calculate monthly income once (salary sum)
+  const monthlyIncome = Object.values(fixed.Income)
+    .filter(i => i.active)
+    .reduce((s, i) => s + i.amount, 0);
+
+  // Calculate monthly fixed costs once (excluding savings)
+  const monthlyFixedCosts = Object.entries(fixed.Costs)
+    .filter(([name, c]) =>
+      c.active && !name.toLowerCase().includes("saving")
+    )
+    .reduce((s, [, c]) => s + c.amount, 0);
+
+  MONTHS.forEach(month => {
+    const { bankNet, savings } = getMonthlyNet(month);
+
+    const variable = expenses[YEAR][month]
+      .reduce((s, e) => s + e.amount, 0);
+
+    const start = runningBalance;
+    const end = start + bankNet + savings;
+    runningBalance = end;
+
+    rows.push([
+      month,
+      monthlyIncome.toFixed(2),
+      monthlyFixedCosts.toFixed(2),
+      variable.toFixed(2),
+      savings.toFixed(2),
+      bankNet.toFixed(2),
+      (bankNet + savings).toFixed(2),
+      end.toFixed(2)
+    ]);
+  });
+
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `personal_finance_${YEAR}.csv`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+
+document
+  .getElementById("exportCsvBtn")
+  .addEventListener("click", exportCSV);
+
+/**
+ * Export all expenses (all months) as CSV.
+ * Each row represents one expense with date & time separated.
+ * Version: v1.1+
+ */
+function exportExpensesCSV() {
+  const rows = [];
+
+  // Header
+  rows.push([
+    "Month",
+    "Category",
+    "Amount",
+    "Date",
+    "Time"
+  ]);
+
+  MONTHS.forEach(month => {
+    expenses[YEAR][month].forEach(exp => {
+      const d = new Date(exp.date);
+
+      rows.push([
+        month,
+        exp.category,
+        exp.amount.toFixed(2),
+        d.toLocaleDateString(),
+        d.toLocaleTimeString()
+      ]);
+    });
+  });
+
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `expenses_${YEAR}.csv`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document
+  .getElementById("exportExpensesBtn")
+  .addEventListener("click", exportExpensesCSV);
+
+/**
+ * Export summary + expenses for the currently selected month.
+ * Version: v1.1+
+ */
+function exportCurrentMonthCSV() {
+  const rows = [];
+
+  const { bankNet, savings } = getMonthlyNet(currentMonth);
+
+  const income = Object.values(fixed.Income)
+    .filter(i => i.active)
+    .reduce((s, i) => s + i.amount, 0);
+
+  const fixedCosts = Object.entries(fixed.Costs)
+    .filter(([name, c]) =>
+      c.active && !name.toLowerCase().includes("saving")
+    )
+    .reduce((s, [, c]) => s + c.amount, 0);
+
+  const variable = expenses[YEAR][currentMonth]
+    .reduce((s, e) => s + e.amount, 0);
+
+  // Summary section
+  rows.push(["Month", currentMonth]);
+  rows.push(["Income", income]);
+  rows.push(["Fixed Costs", fixedCosts]);
+  rows.push(["Variable Expenses", variable]);
+  rows.push(["Savings", savings]);
+  rows.push(["Net Cashflow", bankNet]);
+  rows.push(["Total Growth", bankNet + savings]);
+  rows.push([]); // empty row
+
+  // Expense header
+  rows.push(["Category", "Amount", "Date", "Time"]);
+
+  expenses[YEAR][currentMonth].forEach(exp => {
+    const d = new Date(exp.date);
+    rows.push([
+      exp.category,
+      exp.amount.toFixed(2),
+      d.toLocaleDateString(),
+      d.toLocaleTimeString()
+    ]);
+  });
+
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${currentMonth}_${YEAR}_summary.csv`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document
+  .getElementById("exportMonthBtn")
+  .addEventListener("click", exportCurrentMonthCSV);
 
 
 
