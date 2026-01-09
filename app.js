@@ -144,7 +144,8 @@ expenseForm.onsubmit = e => {
   e.preventDefault();
   expenses[YEAR][currentMonth].push({
     category: category.value,
-    amount: Number(amount.value)
+    amount: Number(amount.value),
+    date: new Date().toISOString() // ⏱ auto date & time
   });
   saveAll(); e.target.reset(); render();
 };
@@ -158,7 +159,11 @@ function renderExpenses() {
 
     // Text
     const text = document.createElement("span");
-    text.textContent = `${e.category}: €${e.amount}`;
+    const dateText = e.date
+      ? new Date(e.date).toLocaleString()
+      : "No date";
+      
+    text.textContent = `${e.category}: €${e.amount} (${dateText})`;
 
     // ✏️ Edit button
     const editBtn = document.createElement("button");
